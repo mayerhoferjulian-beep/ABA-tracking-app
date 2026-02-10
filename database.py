@@ -334,7 +334,16 @@ def compute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
     
-    df["weekday"] = pd.to_datetime(df["date"]).dt.day_name(locale="de_DE")
+    try:
+    
+        df["weekday"] = pd.to_datetime(df["date"]).dt.day_name(locale="de_DE")
+    
+    except Exception:
+    
+        # Fallback für Umgebungen ohne de_DE Locale (z. B. Streamlit Cloud)
+    
+        df["weekday"] = pd.to_datetime(df["date"]).dt.day_name()
+
     
     # Die Nährstoffdaten sind jetzt bereits in df, da sie im Tagesformular eingegeben werden.
     # Ein Merge ist nicht mehr nötig, aber wir behalten ihn zur Sicherheit, falls Daten nur im Ernährungstab eingegeben werden.

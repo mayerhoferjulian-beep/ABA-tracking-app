@@ -342,29 +342,13 @@ def compute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
     
-    # Wochentag robust erzeugen (ohne System-Locale; funktioniert auch auf Streamlit Cloud)
+    # Wochentag robust erzeugen (ohne Locale-Abhängigkeit; Streamlit Cloud kompatibel)
     
-    _weekday_en = pd.to_datetime(df["date"]).dt.day_name()
+    _weekday_idx = pd.to_datetime(df["date"]).dt.weekday  # 0=Mo ... 6=So
     
-    _weekday_map = {
+    _weekday_map = {0: "Montag", 1: "Dienstag", 2: "Mittwoch", 3: "Donnerstag", 4: "Freitag", 5: "Samstag", 6: "Sonntag"}
     
-        "Monday": "Montag",
-    
-        "Tuesday": "Dienstag",
-    
-        "Wednesday": "Mittwoch",
-    
-        "Thursday": "Donnerstag",
-    
-        "Friday": "Freitag",
-    
-        "Saturday": "Samstag",
-    
-        "Sunday": "Sonntag",
-    
-    }
-    
-    df["weekday"] = _weekday_en.map(_weekday_map).fillna(_weekday_en)
+    df["weekday"] = _weekday_idx.map(_weekday_map)
 
     # Die Nährstoffdaten sind jetzt bereits in df, da sie im Tagesformular eingegeben werden.
     # Ein Merge ist nicht mehr nötig, aber wir behalten ihn zur Sicherheit, falls Daten nur im Ernährungstab eingegeben werden.

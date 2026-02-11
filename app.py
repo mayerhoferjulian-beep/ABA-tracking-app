@@ -169,10 +169,10 @@ with tab2:
     
     if nutrition_submitted:
         data = nutrition_form_data
-        base_nutrition_df = nutrition_df[nutrition_df["date"] != data["nutrition_form_date_input"]]
+        base_nutrition_df = nutrition_df[nutrition_df["date"] != data["date"]]
         
         new_nutrition_row = pd.DataFrame([{
-            "date": data["nutrition_form_date_input"], "phase": data["nutrition_form_phase_selectbox"],
+            "date": data["date"], "phase": data["nutrition_form_phase_selectbox"],
             "breakfast": data["nutrition_form_breakfast_input"], "snack_1": data["nutrition_form_snack_1_input"], "lunch": data["nutrition_form_lunch_input"], "snack_2": data["nutrition_form_snack_2_input"], "dinner": data["nutrition_form_dinner_input"],
             "supplements": data["nutrition_form_nutrition_supplements_input"], "nutrition_note": data["nutrition_form_nutrition_note_input"],
             # Nährstoffdaten werden hier wieder aus dem Formular übernommen (NEUE SCHLÜSSEL)

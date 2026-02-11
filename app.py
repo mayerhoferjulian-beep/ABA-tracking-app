@@ -87,9 +87,14 @@ with tab1:
     # Editierbare Tabelle mit Inline-Edit
     if not df.empty:
         # Anzeige-DataFrame mit relevanten Spalten
-        display_cols = ["date", "phase", "sleep_hours", "sleep_score", "hrv_sleep_avg", "rhr_sleep_avg", 
-                       "total_steps", "total_kcal_burn", "intake_kcal", "carbs_g", "protein_g", "fat_g", "water_ml",
-                       "body_weight", "stress_avg", "energy", "mood", "motivation"]
+        show_all_cols = st.checkbox("Alle Spalten anzeigen", value=False, key="daily_show_all_cols")
+        if show_all_cols:
+            display_cols = [c for c in COLUMNS if c in df.columns and c != "last_modified"]
+        else:
+            display_cols = ["date", "phase", "sleep_hours", "sleep_score", "hrv_sleep_avg", "rhr_sleep_avg",
+                           "total_steps", "total_kcal_burn", "intake_kcal", "carbs_g", "protein_g", "fat_g", "water_ml",
+                           "body_weight", "stress_avg", "energy", "mood", "motivation"]
+            display_cols = [c for c in display_cols if c in df.columns]
         display_df = df[display_cols].copy()
         
         # Tabelle mit Inline-Edit
@@ -265,27 +270,14 @@ with tab3:
 
     st.header("Daten (Sporttests)")
     if not sport_tests_df.empty:
-        show_all_cols = st.checkbox("Alle Spalten anzeigen", value=False, key="sporttests_show_all_cols")
-
+        show_all_cols = st.checkbox("Alle Spalten anzeigen", value=False, key="sport_show_all_cols")
         if show_all_cols:
-            # Zeige wirklich alle in den Daten vorhandenen Spalten,
-            # aber blende technische/Datei-Spalten aus (z.B. *_photo, *_pdf).
-            hide_cols = [c for c in sport_tests_df.columns if ("photo" in c.lower() or "pdf" in c.lower())]
-            hide_cols += ["last_modified"]
-            display_df = sport_tests_df.drop(columns=hide_cols, errors="ignore").copy()
+            display_cols = [c for c in SPORT_TESTS_COLUMNS if c in sport_tests_df.columns and c != "last_modified"]
         else:
-            # Kompaktansicht (relevante Kerndaten)
-            display_cols = [
-                "test_date", "test_type",
-                "cooper_distance", "run5k_time",
-                "pushups_reps", "plank_time",
-                "burpee_reps", "vo2max_value",
-                "general_notes",
-            ]
-            display_df = sport_tests_df[[c for c in display_cols if c in sport_tests_df.columns]].copy()
-
-        # None/NaN hübscher darstellen
+            display_cols = [c for c in ["test_date", "test_type", "test_category", "distance_m", "time_sec", "vo2max", "notes"] if c in sport_tests_df.columns]
+        display_df = sport_tests_df[display_cols].copy()
         display_df = display_df.fillna("")
+
         st.dataframe(display_df, use_container_width=True)
     else:
         st.info("Keine Sporttest-Daten vorhanden.")
@@ -330,10 +322,14 @@ with tab4:
 
     st.header("Daten (Bluttests)")
     if not blood_tests_df.empty:
-        # Anzeige-DataFrame mit relevanten Spalten
-        display_cols = [c for c in BLOOD_TESTS_COLUMNS if c in blood_tests_df.columns and c != "last_modified"]
+        show_all_cols = st.checkbox("Alle Spalten anzeigen", value=False, key="blood_show_all_cols")
+        if show_all_cols:
+            display_cols = [c for c in BLOOD_TESTS_COLUMNS if c in blood_tests_df.columns and c != "last_modified"]
+        else:
+            display_cols = [c for c in ["test_date", "test_type", "hemoglobin", "ferritin", "cholesterol", "tsh_basal", "notes"] if c in blood_tests_df.columns]
         display_df = blood_tests_df[display_cols].copy()
         display_df = display_df.fillna("")
+
         st.dataframe(display_df, use_container_width=True)
     else:
         st.info("Keine Bluttest-Daten vorhanden.")

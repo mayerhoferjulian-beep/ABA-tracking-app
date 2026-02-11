@@ -169,15 +169,24 @@ with tab2:
     
     if nutrition_submitted:
         data = nutrition_form_data
-        base_nutrition_df = nutrition_df[nutrition_df["date"] != data["date"]]
-        
+        # Überschreiben nach (date, phase) – Werte kommen aus render_nutrition_form() via locals()
+        base_nutrition_df = nutrition_df[~((nutrition_df["date"] == data["d"]) & (nutrition_df["phase"] == data["phase"]))]
+
         new_nutrition_row = pd.DataFrame([{
-            "date": data["date"], "phase": data["nutrition_form_phase_selectbox"],
-            "breakfast": data["nutrition_form_breakfast_input"], "snack_1": data["nutrition_form_snack_1_input"], "lunch": data["nutrition_form_lunch_input"], "snack_2": data["nutrition_form_snack_2_input"], "dinner": data["nutrition_form_dinner_input"],
-            "supplements": data["nutrition_form_nutrition_supplements_input"], "nutrition_note": data["nutrition_form_nutrition_note_input"],
-            # Nährstoffdaten werden hier wieder aus dem Formular übernommen (NEUE SCHLÜSSEL)
-            "intake_kcal": data["nutrition_form_nutrition_intake_input"], "carbs_g": data["nutrition_form_nutrition_carbs_input"],
-            "protein_g": data["nutrition_form_nutrition_protein_input"], "fat_g": data["nutrition_form_nutrition_fat_input"], "water_ml": data["nutrition_form_nutrition_water_input"],
+            "date": data["d"],
+            "phase": data["phase"],
+            "breakfast": data["breakfast"],
+            "snack_1": data["snack_1"],
+            "lunch": data["lunch"],
+            "snack_2": data["snack_2"],
+            "dinner": data["dinner"],
+            "supplements": data["supplements"],
+            "nutrition_note": data["nutrition_note"],
+            "intake_kcal": data["intake"],
+            "carbs_g": data["carbs"],
+            "protein_g": data["protein"],
+            "fat_g": data["fat"],
+            "water_ml": data["water"],
             "last_modified": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }])
         

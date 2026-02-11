@@ -48,11 +48,11 @@ with tab1:
         
         # Nährstoffdaten aus dem Formular extrahieren (NEUE SCHLÜSSEL)
         nutrition_data_to_save = {
-            "intake_kcal": data["daily_nutrition_intake_input"],
-            "carbs_g": data["daily_nutrition_carbs_input"],
-            "protein_g": data["daily_nutrition_protein_input"],
-            "fat_g": data["daily_nutrition_fat_input"],
-            "water_ml": data["daily_nutrition_water_input"],
+            "intake_kcal": data["intake"],
+            "carbs_g": data["carbs"],
+            "protein_g": data["protein"],
+            "fat_g": data["fat"],
+            "water_ml": data["water"],
         }
 
         # Nährstoffdaten im Ernährungstagebuch synchronisieren/aktualisieren
@@ -70,7 +70,7 @@ with tab1:
             # Körper & Kreislauf
             "morning_pulse": data["morning_pulse"], "hrv_day_avg": data["hrv_day"], "spo2_day_avg": data["spo2_day"], "bp_sys": data["bp_sys"], "bp_dia": data["bp_dia"],
             "body_weight": (data["weight"] if data["weight"] > 0 else pd.NA),
-            "stress_avg": data["stress_avg_body"], "stress_peak": data["stress_peak_body"],
+            "stress_avg": data["stress_avg"], "stress_peak": data["stress_peak"],
             # Wohlbefinden
             "energy": data["energy"], "mood": data["mood"], "motivation": data["motivation"], "concentration": data["concentration"], "note": data["note"],
             "last_modified": datetime.now().strftime("%Y-%m-%d %H:%M:%S")

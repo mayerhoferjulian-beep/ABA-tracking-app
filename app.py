@@ -48,11 +48,11 @@ with tab1:
         
         # Nährstoffdaten aus dem Formular extrahieren (NEUE SCHLÜSSEL)
         nutrition_data_to_save = {
-            "intake_kcal": data["intake"],
-            "carbs_g": data["carbs"],
-            "protein_g": data["protein"],
-            "fat_g": data["fat"],
-            "water_ml": data["water"],
+            "intake_kcal": data["daily_nutrition_intake_input"],
+            "carbs_g": data["daily_nutrition_carbs_input"],
+            "protein_g": data["daily_nutrition_protein_input"],
+            "fat_g": data["daily_nutrition_fat_input"],
+            "water_ml": data["daily_nutrition_water_input"],
         }
 
         # Nährstoffdaten im Ernährungstagebuch synchronisieren/aktualisieren
@@ -70,7 +70,7 @@ with tab1:
             # Körper & Kreislauf
             "morning_pulse": data["morning_pulse"], "hrv_day_avg": data["hrv_day"], "spo2_day_avg": data["spo2_day"], "bp_sys": data["bp_sys"], "bp_dia": data["bp_dia"],
             "body_weight": (data["weight"] if data["weight"] > 0 else pd.NA),
-            "stress_avg": data["stress_avg"], "stress_peak": data["stress_peak"],
+            "stress_avg": data["stress_avg_body"], "stress_peak": data["stress_peak_body"],
             # Wohlbefinden
             "energy": data["energy"], "mood": data["mood"], "motivation": data["motivation"], "concentration": data["concentration"], "note": data["note"],
             "last_modified": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -86,17 +86,10 @@ with tab1:
 
     # Editierbare Tabelle mit Inline-Edit
     if not df.empty:
-        show_all_cols = st.checkbox("Alle Spalten anzeigen", value=False, key="daily_show_all_cols")
-
-        if show_all_cols:
-            # Alle vorhandenen Spalten anzeigen (ohne technische Spalte, falls vorhanden)
-            display_cols = [c for c in df.columns if c != "last_modified"]
-        else:
-            # Kompakte Standardansicht
-            display_cols = ["date", "phase", "sleep_hours", "sleep_score", "hrv_sleep_avg", "rhr_sleep_avg",
-                            "total_steps", "total_kcal_burn", "intake_kcal", "carbs_g", "protein_g", "fat_g", "water_ml",
-                            "body_weight", "stress_avg", "energy", "mood", "motivation"]
-
+        # Anzeige-DataFrame mit relevanten Spalten
+        display_cols = ["date", "phase", "sleep_hours", "sleep_score", "hrv_sleep_avg", "rhr_sleep_avg", 
+                       "total_steps", "total_kcal_burn", "intake_kcal", "carbs_g", "protein_g", "fat_g", "water_ml",
+                       "body_weight", "stress_avg", "energy", "mood", "motivation"]
         display_df = df[display_cols].copy()
         
         # Tabelle mit Inline-Edit
@@ -170,39 +163,18 @@ with tab2:
     
     if nutrition_submitted:
         data = nutrition_form_data
-        # --- Ernährungseintrag (Datum/Phase) sauber aus den Rückgabewerten holen ---
-        nutrition_date = data["d"]
-        nutrition_phase = data["phase"]
-
-        # Sicherstellen, dass Datentypen passen
-        nutrition_df = nutrition_df.copy()
-        if not nutrition_df.empty and "date" in nutrition_df.columns:
-            nutrition_df["date"] = pd.to_datetime(nutrition_df["date"]).dt.date
-
-        # Vorhandenen Eintrag (gleiches Datum & Phase) entfernen
-        base_nutrition_df = nutrition_df[
-            ~((nutrition_df["date"] == nutrition_date) & (nutrition_df["phase"] == nutrition_phase))
-        ]
-
-        # Neuen/aktualisierten Eintrag erstellen (Achtung: Variablennamen aus locals() von render_nutrition_form)
+        base_nutrition_df = nutrition_df[nutrition_df["date"] != data["nutrition_form_date_input"]]
+        
         new_nutrition_row = pd.DataFrame([{
-            "date": nutrition_date,
-            "phase": nutrition_phase,
-            "breakfast": data.get("breakfast", ""),
-            "snack_1": data.get("snack_1", ""),
-            "lunch": data.get("lunch", ""),
-            "snack_2": data.get("snack_2", ""),
-            "dinner": data.get("dinner", ""),
-            "supplements": data.get("supplements", ""),
-            "nutrition_note": data.get("nutrition_note", ""),
-            "intake_kcal": data.get("intake", 0),
-            "carbs_g": data.get("carbs", 0),
-            "protein_g": data.get("protein", 0),
-            "fat_g": data.get("fat", 0),
-            "water_ml": data.get("water", 0),
-            "last_modified": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "date": data["nutrition_form_date_input"], "phase": data["nutrition_form_phase_selectbox"],
+            "breakfast": data["nutrition_form_breakfast_input"], "snack_1": data["nutrition_form_snack_1_input"], "lunch": data["nutrition_form_lunch_input"], "snack_2": data["nutrition_form_snack_2_input"], "dinner": data["nutrition_form_dinner_input"],
+            "supplements": data["nutrition_form_nutrition_supplements_input"], "nutrition_note": data["nutrition_form_nutrition_note_input"],
+            # Nährstoffdaten werden hier wieder aus dem Formular übernommen (NEUE SCHLÜSSEL)
+            "intake_kcal": data["nutrition_form_nutrition_intake_input"], "carbs_g": data["nutrition_form_nutrition_carbs_input"],
+            "protein_g": data["nutrition_form_nutrition_protein_input"], "fat_g": data["nutrition_form_nutrition_fat_input"], "water_ml": data["nutrition_form_nutrition_water_input"],
+            "last_modified": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }])
-
+        
         merged_nutrition_df = pd.concat([base_nutrition_df, new_nutrition_row], ignore_index=True)
         save_nutrition_data(merged_nutrition_df)
         st.success("Ernährung gespeichert! ✅")
@@ -358,10 +330,10 @@ with tab4:
 
     st.header("Daten (Bluttests)")
     if not blood_tests_df.empty:
-        # Anzeige-DataFrame mit relevanten Spalten
-        display_cols = ["test_date", "test_type", "hemoglobin", "ferritin", "cholesterol", "tsh_basal", "notes"]
+        # Alle Spalten anzeigen, für die es Eingabefelder gibt (gemäß BLOOD_TESTS_COLUMNS), ohne last_modified
+        display_cols = [c for c in BLOOD_TESTS_COLUMNS if c in blood_tests_df.columns and c != "last_modified"]
         display_df = blood_tests_df[display_cols].copy()
-        
+        display_df = display_df.fillna("")
         st.dataframe(display_df, use_container_width=True)
     else:
         st.info("Keine Bluttest-Daten vorhanden.")

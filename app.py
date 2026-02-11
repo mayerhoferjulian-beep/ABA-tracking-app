@@ -84,10 +84,11 @@ with tab1:
 
     st.header("Daten (Tageswerte)")
 
+    show_all_cols = st.checkbox("Alle Spalten anzeigen", value=False, key="daily_show_all_cols")
+
     # Editierbare Tabelle mit Inline-Edit
     if not df.empty:
         # Anzeige-DataFrame mit relevanten Spalten
-        show_all_cols = st.checkbox("Alle Spalten anzeigen", value=False, key="daily_show_all_cols")
         if show_all_cols:
             display_cols = [c for c in COLUMNS if c in df.columns and c != "last_modified"]
         else:

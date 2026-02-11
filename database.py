@@ -218,10 +218,14 @@ def update_sport_tests_data(test_date_val: date, test_type_val: str, updated_dat
         for key, value in updated_data.items():
             if key in df.columns:
                 df.loc[mask, key] = value
-    
+
     # Zeitstempel der letzten Änderung hinzufügen
+    # (Wichtig: nach pd.concat muss der Mask-Filter neu auf dem aktuellen DataFrame berechnet werden.)
+    if "last_modified" not in df.columns:
+        df["last_modified"] = None
+    mask = (df["test_date"] == test_date_val) & (df["test_type"] == test_type_val)
     df.loc[mask, "last_modified"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     # Speichern
     save_sport_tests_data(df)
     return True
@@ -244,10 +248,14 @@ def update_blood_tests_data(test_date_val: date, test_type_val: str, updated_dat
         for key, value in updated_data.items():
             if key in df.columns:
                 df.loc[mask, key] = value
-    
+
     # Zeitstempel der letzten Änderung hinzufügen
+    # (Wichtig: nach pd.concat muss der Mask-Filter neu auf dem aktuellen DataFrame berechnet werden.)
+    if "last_modified" not in df.columns:
+        df["last_modified"] = None
+    mask = (df["test_date"] == test_date_val) & (df["test_type"] == test_type_val)
     df.loc[mask, "last_modified"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     # Speichern
     save_blood_tests_data(df)
     return True
@@ -334,30 +342,9 @@ def compute_metrics(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
     
-    # Wochentag robust erzeugen (ohne System-Locale; funktioniert auch auf Streamlit Cloud)
+    df["weekday"] = pd.to_datetime(df["date"]).dt.day_name(locale="de_DE")
     
-    _weekday_en = pd.to_datetime(df["date"]).dt.day_name()
-    
-    _weekday_map = {
-    
-        "Monday": "Montag",
-    
-        "Tuesday": "Dienstag",
-    
-        "Wednesday": "Mittwoch",
-    
-        "Thursday": "Donnerstag",
-    
-        "Friday": "Freitag",
-    
-        "Saturday": "Samstag",
-    
-        "Sunday": "Sonntag",
-    
-    }
-    
-    df["weekday"] = _weekday_en.map(_weekday_map).fillna(_weekday_en)
-# Die Nährstoffdaten sind jetzt bereits in df, da sie im Tagesformular eingegeben werden.
+    # Die Nährstoffdaten sind jetzt bereits in df, da sie im Tagesformular eingegeben werden.
     # Ein Merge ist nicht mehr nötig, aber wir behalten ihn zur Sicherheit, falls Daten nur im Ernährungstab eingegeben werden.
     nutrition_df = load_nutrition_data()
     if not nutrition_df.empty:

@@ -330,7 +330,7 @@ with tab4:
 
     st.header("Daten (Bluttests)")
     if not blood_tests_df.empty:
-        # Alle Spalten anzeigen, für die es Eingabefelder gibt (gemäß BLOOD_TESTS_COLUMNS), ohne last_modified
+        # Anzeige-DataFrame mit relevanten Spalten
         display_cols = [c for c in BLOOD_TESTS_COLUMNS if c in blood_tests_df.columns and c != "last_modified"]
         display_df = blood_tests_df[display_cols].copy()
         display_df = display_df.fillna("")
